@@ -1,0 +1,14 @@
+"Games"
+{
+	"csgo"
+	{
+		"Offsets"
+		{
+			"PhysicsTouchTriggers"	// Contains string "Inserted %s with no model"
+			{
+				"windows"	"109"
+				"linux"		"109"
+			}
+		}
+	}
+}
