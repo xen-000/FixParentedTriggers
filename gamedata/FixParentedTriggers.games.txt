@@ -2,12 +2,31 @@
 {
 	"csgo"
 	{
-		"Offsets"
+		"Signatures"
 		{
-			"PhysicsTouchTriggers"	// Contains string "Inserted %s with no model"
+			"CBaseEntity::PhysicsTouchTriggers" // Contains string "Inserted %s with no model"
 			{
-				"windows"	"109"
-				"linux"		"109"
+				"library"		"server"
+				"linux"			"\x55\x89\xE5\x57\x56\x53\x83\xEC\x2C\x8B\x55\x08\x8B\x7D\x0C\x8B\x5A\x24"
+				"windows"		"\x55\x8B\xEC\x83\xEC\x0C\x57\x8B\xF9\x8B\x47\x1C"
+			}
+		}
+		
+		"Functions"
+		{
+			"CBaseEntity__PhysicsTouchTriggers"
+			{
+				"signature"		"CBaseEntity::PhysicsTouchTriggers"
+				"callconv"		"thiscall"
+				"return"		"void"
+				"this"			"entity"
+				"arguments"
+				{
+					"pPrevAbsOrigin"
+					{
+						"type"	"vectorptr"
+					}
+				}
 			}
 		}
 	}

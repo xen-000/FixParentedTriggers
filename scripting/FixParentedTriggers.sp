@@ -14,33 +14,54 @@ public Plugin myinfo =
 	url 			= ""
 };
 
+#define FSOLID_TRIGGER 0x0008
+
 Handle g_hPhysicsTouchTriggers;
+
+int g_iSolidFlags;
 
 public void OnPluginStart()
 {
-	Handle hGameConf = LoadGameConfigFile("FixParentedTriggers.games");
+	Handle hGameData = LoadGameConfigFile("FixParentedTriggers.games");
 
-	if(hGameConf == INVALID_HANDLE)
+	if(hGameData == INVALID_HANDLE)
 	{
 		SetFailState("Couldn't load FixParentedTriggers game config!");
 		return;
 	}
 
-	int offset = GameConfGetOffset(hGameConf, "PhysicsTouchTriggers");
-	g_hPhysicsTouchTriggers = DHookCreate(offset, HookType_Entity, ReturnType_Void, ThisPointer_CBaseEntity, PhysicsTouchTriggers);
-	DHookAddParam(g_hPhysicsTouchTriggers, HookParamType_VectorPtr);
+	// CBaseEntity::PhysicsTouchTriggers
+	g_hPhysicsTouchTriggers = DHookCreateFromConf(hGameData, "CBaseEntity__PhysicsTouchTriggers");
+	if(!g_hPhysicsTouchTriggers)
+	{
+		delete hGameData;
+		SetFailState("Failed to setup detour for CBaseEntity_::PhysicsTouchTriggers");
+	}
 
-	CloseHandle(hGameConf);
+	if(!DHookEnableDetour(g_hPhysicsTouchTriggers, false, Detour_PhysicsTouchTriggers))
+	{
+		delete hGameData;
+		SetFailState("Failed to detour CBaseEntity::PhysicsTouchTriggers.");
+	}
+
+	CloseHandle(hGameData);
 }
 
-public void OnEntityCreated(int iEntity, const char[] sClassname)
+public void OnPluginEnd()
 {
-	if(StrContains(sClassname, "trigger_", false) != -1)
-		DHookEntity(g_hPhysicsTouchTriggers, false, iEntity);
+	DHookDisableDetour(g_hPhysicsTouchTriggers, false, Detour_PhysicsTouchTriggers);
+}
+
+public void OnMapStart()
+{
+	g_iSolidFlags = FindDataMapInfo(0, "m_usSolidFlags");
 }
 
 // void CBaseEntity::PhysicsTouchTriggers( const Vector *pPrevAbsOrigin )
-public MRESReturn PhysicsTouchTriggers()
+public MRESReturn Detour_PhysicsTouchTriggers(int iEntity)
 {
-	return MRES_Supercede;
+	if (GetEntData(iEntity, g_iSolidFlags) & FSOLID_TRIGGER)
+		return MRES_Supercede;
+
+	return MRES_Ignored;
 }
